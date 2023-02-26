@@ -75,7 +75,7 @@ fn HomePage(cx: Scope) -> impl IntoView {
                     <For
                         each=reference
                         key=|r| r.code
-                        view=move |r: Code| {
+                        view=move |cx, r: Code| {
                             view! {
                                 cx,
                                 <li>
@@ -95,7 +95,7 @@ fn HomePage(cx: Scope) -> impl IntoView {
                     <For
                         each=modifiers
                         key=|m| m.code
-                        view=move |m: Code| {
+                        view=move |cx, m: Code| {
                             view! {
                                 cx,
                                 <li>
