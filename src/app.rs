@@ -11,13 +11,11 @@ struct Code {
 }
 
 #[component]
-pub fn App(cx: Scope) -> impl IntoView {
+pub fn App() -> impl IntoView {
     // Provides context that manages stylesheets, titles, meta tags, etc.
-    provide_meta_context(cx);
+    provide_meta_context();
 
     view! {
-        cx,
-
         // injects a stylesheet into the document <head>
         // id=leptos means cargo-leptos will hot-reload this stylesheet
         <Stylesheet id="leptos" href="/pkg/rustexp_leptos.css"/>
@@ -29,7 +27,7 @@ pub fn App(cx: Scope) -> impl IntoView {
         <Router>
             <main>
                 <Routes>
-                    <Route path="" view=|cx| view! { cx, <HomePage/> }/>
+                    <Route path="" view=|| view! {  <HomePage/> }/>
                 </Routes>
             </main>
         </Router>
@@ -38,16 +36,16 @@ pub fn App(cx: Scope) -> impl IntoView {
 
 /// Renders the home page of your application.
 #[component]
-fn HomePage(cx: Scope) -> impl IntoView {
-    let (pattern, set_pattern) = create_signal(cx, String::default());
-    let (subject, set_subject) = create_signal(cx, String::default());
+fn HomePage() -> impl IntoView {
+    let (pattern, set_pattern) = create_signal(String::default());
+    let (subject, set_subject) = create_signal(String::default());
 
-    let result = create_memo(cx, move |_| run_regex(&pattern(), &subject()));
+    let result = create_memo(move |_| run_regex(&pattern.get(), &subject.get()));
 
-    let (reference, _) = create_signal(cx, get_reference());
-    let (modifiers, _) = create_signal(cx, get_modifiers());
+    let reference = get_reference();
+    let modifiers = get_modifiers();
 
-    view! { cx,
+    view! {
         <div class="bg-slate-800 container max-w-none m-0 px-4 pt-10 font-sans">
             <header class="container text-white text-center space-y-4 px-1">
                 <p class="text-4xl">"Rustexp-leptos"</p>
@@ -58,54 +56,58 @@ fn HomePage(cx: Scope) -> impl IntoView {
                 <div class="container space-y-1 px-1">
                     <div>
                         <label for="pattern" class="block text-white">"Regex"</label>
-                        <textarea on:input=move |e| set_pattern(event_target_value(&e)) class="bg-slate-600 text-slate-300 p-1 w-full" name="pattern" rows="1"/>
+                        <textarea
+                            on:input=move |ev| {set_pattern.set(event_target_value(&ev));}
+                            prop:value=pattern
+                            class="bg-slate-600 text-slate-300 p-1 w-full"
+                            name="pattern" rows="1"
+                        />
                     </div>
                     <div>
                         <label for="subject" class="block text-white">"Subject"</label>
-                        <textarea on:input=move |e| set_subject(event_target_value(&e)) class="bg-slate-600 text-slate-300 p-1 w-full" name="subject" rows="5"/>
+                        <textarea
+                            on:input=move |ev| set_subject.set(event_target_value(&ev))
+                            prop:value=subject
+                            class="bg-slate-600 text-slate-300 p-1 w-full"
+                            name="subject" rows="5"
+                        />
                     </div>
                 </div>
                 <div class="container overflow-auto bg-slate-700 text-slate-300 p-2 mt-6 text-white">
-                    <pre class="h-full">{ move || result() }</pre>
+                    <pre class="h-full">{ move || result.get() }</pre>
                 </div>
             </div>
             <div class="container max-w-5xl text-slate-400 text-left font-mono mt-10 pb-8 px-1">
                 <p class="mt-8 text-white">"Reference:"</p>
                 <ul class="list-none mt-4 columns-1 md:columns-3 pl-2">
-                    <For
-                        each=reference
-                        key=|r| r.code
-                        view=move |cx, r: Code| {
-                            view! {
-                                cx,
+                    {
+                        reference.into_iter()
+                        .map(|r| view! {
                                 <li>
                                     <code class="bg-slate-700 leading-relaxed mr-2 px-1 whitespace-nowrap">
                                         {move || r.code}
                                     </code>{move || r.desc}
                                 </li>
-                            }
-                        }
-                    />
+                            })
+                        .collect::<Vec<_>>()
+                    }
                 </ul>
                 <p class="mt-8 text-white">"Modifiers (enable: "
                     <code class="bg-slate-700 leading-relaxed mr-2 px-1 whitespace-nowrap">"(?a)"</code>", disable: "
                     <code class="bg-slate-700 leading-relaxed mr-2 px-1 whitespace-nowrap">"(?-a)"</code>"):"
                 </p>
                 <ul class="list-none mt-4 columns-1 md:columns-3 pl-2">
-                    <For
-                        each=modifiers
-                        key=|m| m.code
-                        view=move |cx, m: Code| {
-                            view! {
-                                cx,
+                    {
+                        modifiers.into_iter()
+                        .map(|m| view! {
                                 <li>
                                     <code class="bg-slate-700 leading-relaxed mr-2 px-1 whitespace-nowrap">
                                         {move || m.code}
                                     </code>{move || m.desc}
                                 </li>
-                            }
-                        }
-                    />
+                            })
+                        .collect::<Vec<_>>()
+                    }
                 </ul>
                 <p class="mt-8 text-center">
                     "For more information see the "
