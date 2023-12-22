@@ -16,8 +16,6 @@ pub fn App() -> impl IntoView {
     provide_meta_context();
 
     view! {
-        // injects a stylesheet into the document <head>
-        // id=leptos means cargo-leptos will hot-reload this stylesheet
         <Stylesheet id="leptos" href="/pkg/rustexp_leptos.css"/>
 
         // sets the document title
@@ -27,7 +25,7 @@ pub fn App() -> impl IntoView {
         <Router>
             <main>
                 <Routes>
-                    <Route path="" view=|| view! {  <HomePage/> }/>
+                    <Route path="" view=|| view! { <HomePage/> }/>
                 </Routes>
             </main>
         </Router>
@@ -55,84 +53,126 @@ fn HomePage() -> impl IntoView {
             <div class="container resize-y flex max-w-5xl items-stretch font-mono leading-snug space-x-4 mt-8">
                 <div class="container space-y-1 px-1">
                     <div>
-                        <label for="pattern" class="block text-white">"Regex"</label>
+                        <label for="pattern" class="block text-white">
+                            "Regex"
+                        </label>
                         <textarea
-                            on:input=move |ev| {set_pattern.set(event_target_value(&ev));}
+                            on:input=move |ev| {
+                                set_pattern.set(event_target_value(&ev));
+                            }
+
                             prop:value=pattern
                             class="bg-slate-600 text-slate-300 p-1 w-full"
-                            name="pattern" rows="1"
-                        />
+                            name="pattern"
+                            rows="1"
+                        ></textarea>
                     </div>
                     <div>
-                        <label for="subject" class="block text-white">"Subject"</label>
+                        <label for="subject" class="block text-white">
+                            "Subject"
+                        </label>
                         <textarea
                             on:input=move |ev| set_subject.set(event_target_value(&ev))
                             prop:value=subject
                             class="bg-slate-600 text-slate-300 p-1 w-full"
-                            name="subject" rows="5"
-                        />
+                            name="subject"
+                            rows="5"
+                        ></textarea>
                     </div>
                 </div>
                 <div class="container overflow-auto bg-slate-700 text-slate-300 p-2 mt-6 text-white">
-                    <pre class="h-full">{ move || result.get() }</pre>
+                    <pre class="h-full">{move || result.get()}</pre>
                 </div>
             </div>
             <div class="container max-w-5xl text-slate-400 text-left font-mono mt-10 pb-8 px-1">
                 <p class="mt-8 text-white">"Reference:"</p>
                 <ul class="list-none mt-4 columns-1 md:columns-3 pl-2">
-                    {
-                        reference.into_iter()
-                        .map(|r| view! {
+
+                    {reference
+                        .into_iter()
+                        .map(|r| {
+                            view! {
                                 <li>
                                     <code class="bg-slate-700 leading-relaxed mr-2 px-1 whitespace-nowrap">
                                         {move || r.code}
-                                    </code>{move || r.desc}
+                                    </code>
+                                    {move || r.desc}
                                 </li>
-                            })
-                        .collect::<Vec<_>>()
-                    }
+                            }
+                        })
+                        .collect::<Vec<_>>()}
+
                 </ul>
-                <p class="mt-8 text-white">"Modifiers (enable: "
-                    <code class="bg-slate-700 leading-relaxed mr-2 px-1 whitespace-nowrap">"(?a)"</code>", disable: "
-                    <code class="bg-slate-700 leading-relaxed mr-2 px-1 whitespace-nowrap">"(?-a)"</code>"):"
+                <p class="mt-8 text-white">
+                    "Modifiers (enable: "
+                    <code class="bg-slate-700 leading-relaxed mr-2 px-1 whitespace-nowrap">
+                        "(?a)"
+                    </code> ", disable: "
+                    <code class="bg-slate-700 leading-relaxed mr-2 px-1 whitespace-nowrap">
+                        "(?-a)"
+                    </code> "):"
                 </p>
                 <ul class="list-none mt-4 columns-1 md:columns-3 pl-2">
-                    {
-                        modifiers.into_iter()
-                        .map(|m| view! {
+
+                    {modifiers
+                        .into_iter()
+                        .map(|m| {
+                            view! {
                                 <li>
                                     <code class="bg-slate-700 leading-relaxed mr-2 px-1 whitespace-nowrap">
                                         {move || m.code}
-                                    </code>{move || m.desc}
+                                    </code>
+                                    {move || m.desc}
                                 </li>
-                            })
-                        .collect::<Vec<_>>()
-                    }
+                            }
+                        })
+                        .collect::<Vec<_>>()}
+
                 </ul>
                 <p class="mt-8 text-center">
                     "For more information see the "
-                    <a href="https://docs.rs/regex/" class="text-white" target="_blank">"documentation for the regex crate"</a>"."
+                    <a href="https://docs.rs/regex/" class="text-white" target="_blank">
+                        "documentation for the regex crate"
+                    </a> "."
                 </p>
             </div>
         </div>
         <footer class="container max-w-none m-0 py-8 px-1 bg-slate-700 text-slate-400 text-center">
             <p>
-                "Rustexp-leptos is " <a href="http://en.wikipedia.org/wiki/Free_software" class="text-white" target="_blank">
-                    "Free software"</a> ", available under the "
-                <a href="https://gnu.org/licenses/agpl.html" class="text-white" target="_blank">"GNU
-                    AGPL3"</a>" licence."
+                "Rustexp-leptos is "
+                <a
+                    href="http://en.wikipedia.org/wiki/Free_software"
+                    class="text-white"
+                    target="_blank"
+                >
+                    "Free software"
+                </a> ", available under the "
+                <a href="https://gnu.org/licenses/agpl.html" class="text-white" target="_blank">
+                    "GNU
+                    AGPL3"
+                </a> " licence."
             </p>
             <p>
                 "The source code is freely available on "
-                <a href="https://github.com/wr8fdy/rustexp-leptos" class="text-white" target="_blank">"GitHub"</a>"."
+                <a
+                    href="https://github.com/wr8fdy/rustexp-leptos"
+                    class="text-white"
+                    target="_blank"
+                >
+                    "GitHub"
+                </a> "."
             </p>
             <p>
                 "Inspired by Louis Pilfold's excellent "
-                <a href="https://rustexp.lpil.uk/" class="text-white" target="_blank">"Rustexp"</a>"."
+                <a href="https://rustexp.lpil.uk/" class="text-white" target="_blank">
+                    "Rustexp"
+                </a> "."
             </p>
             <p>
                 "Copyright © 2023 - Present "
-                <a href="https://github.com/wr8fdy" class="text-white" target="_blank">"wr8fdy"</a>". All Rights
+                <a href="https://github.com/wr8fdy" class="text-white" target="_blank">
+                    "wr8fdy"
+                </a> ". All Rights
                 Reserved."
             </p>
         </footer>
