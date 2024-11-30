@@ -1,39 +1,37 @@
 #[cfg(feature = "ssr")]
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    use actix_files::Files;
-    use actix_web::*;
+#[tokio::main]
+async fn main() {
+    use axum::Router;
     use leptos::*;
-    use leptos_actix::{generate_route_list, LeptosRoutes};
-    use rustexp_leptos::app::*;
+    use leptos_axum::{generate_route_list, LeptosRoutes};
+    use rustexp_leptos::{app::*, fileserv::file_and_error_handler};
 
-    let conf = get_configuration(Some("Cargo.toml")).await.unwrap();
-    let addr = conf.leptos_options.site_addr;
-    // Generate the list of routes in your Leptos App
-    let routes = generate_route_list(|| view! { <App/> });
+    // Setting get_configuration(None) means we'll be using cargo-leptos's env values
+    // For deployment these variables are:
+    // <https://github.com/leptos-rs/start-axum#executing-a-server-on-a-remote-machine-without-the-toolchain>
+    // Alternately a file can be specified such as Some("Cargo.toml")
+    // The file would need to be included with the executable when moved to deployment
+    let conf = get_configuration(None).await.unwrap();
+    let leptos_options = conf.leptos_options;
+    let addr = leptos_options.site_addr;
+    let routes = generate_route_list(App);
 
-    HttpServer::new(move || {
-        let leptos_options = &conf.leptos_options;
-        let site_root = &leptos_options.site_root;
+    // build our application with a route
+    let app = Router::new()
+        .leptos_routes(&leptos_options, routes, App)
+        .fallback(file_and_error_handler)
+        .with_state(leptos_options);
 
-        App::new()
-            .route("/api/{tail:.*}", leptos_actix::handle_server_fns())
-            .leptos_routes(
-                leptos_options.to_owned(),
-                routes.to_owned(),
-                || view! { <App/> },
-            )
-            .service(Files::new("/", site_root))
-        //.wrap(middleware::Compress::default())
-    })
-    .bind(&addr)?
-    .run()
-    .await
+    let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
+    logging::log!("listening on http://{}", &addr);
+    axum::serve(listener, app.into_make_service())
+        .await
+        .unwrap();
 }
 
 #[cfg(not(feature = "ssr"))]
 pub fn main() {
     // no client-side main function
-    // unless we want this to work with e.g., Trunk for pure client-side testing
+    // unless we want this to work with e.g., Trunk for a purely client-side app
     // see lib.rs for hydration function instead
 }

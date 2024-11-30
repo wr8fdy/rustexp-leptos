@@ -1,8 +1,11 @@
+use std::fmt::Write;
+
 use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
 use regex::bytes::Regex;
-use std::fmt::Write;
+
+use crate::error_template::{AppError, ErrorTemplate};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct Code {
@@ -22,10 +25,17 @@ pub fn App() -> impl IntoView {
         <Title text="Rustexp-leptos"/>
 
         // content for this welcome page
-        <Router>
+        <Router fallback=|| {
+            let mut outside_errors = Errors::default();
+            outside_errors.insert_with_default_key(AppError::NotFound);
+            view! {
+                <ErrorTemplate outside_errors/>
+            }
+            .into_view()
+        }>
             <main>
                 <Routes>
-                    <Route path="" view=|| view! { <HomePage/> }/>
+                    <Route path="" view=HomePage/>
                 </Routes>
             </main>
         </Router>
